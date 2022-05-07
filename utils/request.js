@@ -9,6 +9,7 @@ export const request = (url, method, data, fun) => {
 		},
 		success: (resp) => {
 			if (resp.data.code == 4006 || resp.data.code == 4010) {
+				console.log("跳转");
 				uni.redirectTo({
 					url: '../login/login'
 				});

@@ -1,12 +1,13 @@
 <template>
 	<view class="container">
+		<uni-popup ref="popupMsg" type="top"><uni-popup-message type="success" :message="'接收到' + lastRows + '条消息'" :duration="3000" /></uni-popup>
 		<swiper circular="true" duration="1000" interval="8000" class="swiper">
 			<swiper-item><image mode="widthFix" src="https://office-1259325146.cos.ap-nanjing.myqcloud.com/8.jpg"></image></swiper-item>
 			<swiper-item><image mode="widthFix" src="https://office-1259325146.cos.ap-nanjing.myqcloud.com/14.jpg"></image></swiper-item>
 		</swiper>
 
-		<view class="notify-container">
-			<view class="notify-title">
+		<view class="notify-container" @tap="goToPage('/pages/messageList/messageList')">
+			<view class="notify-title" >
 				<image src="../../static/icon-1.png" mode="widthFix" class="notify-icon"></image>
 				消息提醒
 			</view>
@@ -74,10 +75,20 @@
 </template>
 
 <script>
+import uniPopup from '@/components/uni-popup/uni-popup.vue';
+import uniPopupMessage from '@/components/uni-popup/uni-popup-message.vue';
+import uniPopupDialog from '@/components/uni-popup/uni-popup-dialog.vue';
 export default {
+	components: {
+		uniPopup,
+		uniPopupMessage,
+		uniPopupDialog
+	},
 	data() {
 		return {
-			unreadRows: '188'
+			timer: null,
+			unreadRows: 0,
+			lastRows: 0
 		};
 	},
 	methods: {
@@ -85,7 +96,45 @@ export default {
 			uni.redirectTo({
 				url
 			});
+		},
+
+		refreshMessage() {
+			const that = this;
+			that.$request(that.$urls.refreshMessage, 'GET', {}, resp => {
+				that.unreadRows = resp.data.unreadRows;
+				that.lastRows = resp.data.lastRows;
+				if (that.lastRows > 0) {
+					uni.$emit('showMessage');
+				}
+			});
 		}
+	},
+	onLoad() {
+		// 监听事件
+		let that = this;
+		uni.$on('showMessage', function() {
+			that.$refs.popupMsg.open();
+		});
+	},
+	onUnload: function() {
+		// 移除监听事件
+		uni.$off('showMessage');
+	},
+	onShow: function() {
+		const that = this;
+
+		that.refreshMessage();
+		that.timer = setInterval(function() {
+			that.refreshMessage();
+		}, 5000);
+	},
+	onHide: function() {
+		console.log('清除');
+		clearInterval(this.timer);
+	},
+	onUnload: function() {
+		console.log('清除');
+		clearInterval(this.timer);
 	}
 };
 </script>

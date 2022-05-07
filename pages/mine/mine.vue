@@ -15,14 +15,14 @@
 				</view>
 				<view>
 					<text class="title">状态</text>
-					<text class="value">在职</text>
+					<text class="value">{{status ==1?"在职":"离职"}}</text>
 				</view>
 			</view>
 		</view>
 		<view class="list-title">用户信息栏目</view>
 		<uni-list>
 			<uni-list-item title="个人资料" link to=""></uni-list-item>
-			<uni-list-item title="我的考勤" link to="/pages/my_checkin/my_checkin"></uni-list-item>
+			<uni-list-item title="我的考勤" link to="/pages/myCheckin/myCheckin"></uni-list-item>
 			<uni-list-item title="罚款记录" link to=""></uni-list-item>
 		</uni-list>
 		<view class="list-title">系统管理栏目</view>
@@ -46,8 +46,27 @@ export default {
 		return {
 			name: '',
 			deptName: '',
-			photo: ''
+			photo: '',
+			status:-1
 		};
+	},
+	methods:{
+		getUserSummary(){
+			const that = this;
+			that.$request(this.$urls.getUserSummary, 'GET', {}, res => {
+				console.log(res);
+				if(res.code === 2000){
+					that.name = res.data.name;
+					that.deptName = res.data.deptName;
+					that.photo = res.data.photo;
+					that.status = res.data.status;
+				}
+				
+			});
+		}
+	},
+	onLoad() {
+		this.getUserSummary()
 	}
 };
 </script>
